@@ -1,0 +1,1 @@
+console.log("ECG Website Loaded Successfully");
