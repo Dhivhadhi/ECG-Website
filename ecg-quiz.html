@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>ECG Quiz Website</title>
+
+<style>
+
+/* RESET */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial;
+}
+
+/* BODY */
+
+body{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+/* TITLE */
+
+h1{
+    color:#007bff;
+    margin-bottom:25px;
+}
+
+/* LEVEL BUTTONS */
+
+.levels{
+    margin-bottom:25px;
+}
+
+.level-btn{
+    padding:12px 20px;
+    margin:10px;
+    border:none;
+    border-radius:10px;
+    background:#007bff;
+    color:white;
+    cursor:pointer;
+    font-size:16px;
+    transition:0.3s;
+}
+
+.level-btn:hover{
+    background:#0056b3;
+    transform:scale(1.05);
+}
+
+/* QUIZ BOX */
+
+.quiz-box{
+    background:white;
+    width:90%;
+    max-width:1000px;
+    min-height:600px;
+    margin:auto;
+    padding:30px;
+    border-radius:20px;
+    box-shadow:0 5px 15px rgba(0,0,0,0.2);
+    animation:fadeIn 0.5s ease;
+}
+
+/* ANIMATION */
+
+@keyframes fadeIn{
+
+    from{
+        opacity:0;
+        transform:translateY(20px);
+    }
+
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+
+}
+
+/* QUESTION */
+
+#question{
+    margin-bottom:20px;
+}
+
+/* IMAGE */
+
+.quiz-image{
+    width:100%;
+    height:450px;
+    object-fit:contain;
+    border-radius:15px;
+    background:#f5f5f5;
+    padding:10px;
+    margin-bottom:25px;
+}
+
+/* OPTIONS */
+
+.options{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+}
+
+.option{
+    padding:20px;
+    border:2px solid #ccc;
+    border-radius:12px;
+    cursor:pointer;
+    transition:0.3s;
+    background:white;
+    font-size:18px;
+    font-weight:bold;
+}
+
+.option:hover{
+    transform:scale(1.03);
+    background:#f5f5f5;
+}
+
+/* SELECTED */
+
+.selected{
+    border-color:#007bff;
+}
+
+/* CORRECT */
+
+.correct{
+    background:green;
+    color:white;
+    border-color:green;
+}
+
+/* WRONG */
+
+.wrong{
+    background:red;
+    color:white;
+    border-color:red;
+}
+
+/* BUTTONS */
+
+.buttons{
+    display:flex;
+    justify-content:space-between;
+    margin-top:25px;
+}
+
+.btn{
+    padding:12px 20px;
+    border:none;
+    border-radius:10px;
+    background:#007bff;
+    color:white;
+    cursor:pointer;
+    transition:0.3s;
+    font-size:16px;
+}
+
+.btn:hover{
+    background:#0056b3;
+    transform:scale(1.05);
+}
+
+/* QUESTION COUNT */
+
+#questionCount{
+    margin-bottom:15px;
+    font-size:18px;
+    font-weight:bold;
+}
+
+/* MOBILE */
+
+@media(max-width:700px){
+
+    .options{
+        grid-template-columns:1fr;
+    }
+
+    .buttons{
+        flex-direction:column;
+        gap:15px;
+    }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- TITLE -->
+
+<h1>ECG Quiz Website</h1>
+
+<!-- LEVELS -->
+
+<div class="levels">
+
+    <button class="level-btn"
+    onclick="loadCategory('easy')">
+
+        Easy
+
+    </button>
+
+    <button class="level-btn"
+    onclick="loadCategory('hard')">
+
+        Hard
+
+    </button>
+
+</div>
+
+<!-- QUIZ BOX -->
+
+<div class="quiz-box">
+
+    <!-- QUESTION NUMBER -->
+
+    <div id="questionCount">
+
+        Question 1 Out of 30
+
+    </div>
+
+    <!-- QUESTION -->
+
+    <h2 id="question">
+
+        ECG Question
+
+    </h2>
+
+    <!-- IMAGE -->
+
+    <img id="quizImage"
+    class="quiz-image">
+
+    <!-- OPTIONS -->
+
+    <div class="options"
+    id="optionsContainer">
+
+    </div>
+
+    <!-- BUTTONS -->
+
+    <div class="buttons">
+
+        <button class="btn"
+        onclick="previousQuestion()">
+
+            Previous
+
+        </button>
+
+        <button class="btn"
+        onclick="checkAnswer()">
+
+            Check Answer
+
+        </button>
+
+        <button class="btn"
+        onclick="nextQuestion()">
+
+            Next
+
+        </button>
+
+    </div>
+
+</div>
+
+<!-- AUDIO -->
+
+<audio id="correctSound" preload="auto">
+    <source src="./correct.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="wrongSound" preload="auto">
+    <source src="./incorrect.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+
+/* QUIZ QUESTIONS */
+
+const quizzes = {
+
+easy:[
+
+{
+question:"Identify this ECG rhythm",
+
+image:"NORMAL-I.png",
+
+options:[
+"Normal Sinus Rhythm",
+"Sinus Bradycardia",
+"Sinus Tachycardia",
+"Sinus Arrhythmia"
+],
+
+answer:"Normal Sinus Rhythm"
+},
+
+{
+question:"Identify this ECG wave",
+
+image:"SA-I.jpg",
+
+options:[
+"Normal Sinus Rhythm",
+"Sinus Bradycardia",
+"Sinus Tachycardia",
+"Sinus Arrhythmia"
+],
+
+answer:"Sinus Arrhythmia"
+},
+
+{
+question:"Identify this ECG rhythm",
+
+image:"ST-I.png",
+
+options:[
+"Normal Sinus Rhythm",
+"Sinus Bradycardia",
+"Sinus Tachycardia",
+"Sinus Arrhythmia"
+],
+
+answer:"Sinus Tachycardia"
+},
+
+{
+question:"Identify this ECG rhythm",
+
+image:"ST-II.jpg",
+
+options:[
+"Normal Sinus Rhythm",
+"Sinus Bradycardia",
+"Sinus Tachycardia",
+"Sinus Arrhythmia"
+],
+
+answer:"Sinus Tachycardia"
+},
+
+{
+question:"Identify this ECG rhythm",
+
+image:"SB-I.jpg",
+
+options:[
+"Normal Sinus Rhythm",
+"Sinus Bradycardia",
+"Sinus Tachycardia",
+"Sinus Arrhythmia"
+],
+
+answer:"Sinus Bradycardia"
+},
+
+{
+question:"Identify this ECG rhythm",
+image:"SB-II.jpg",
+options:[
+"Normal Sinus Rhythm",
+"Sinus Bradycardia",
+"Sinus Tachycardia",
+"Sinus Arrhythmia"
+],
+answer:"Sinus Bradycardia"
+},
+
+{
+question:"Identify this ECG rhythm",
+image:"VT-I.jpg",
+options:[
+"Ventricular Fibrillation",
+"Second-degree heart block Type I",
+"Ventricular Tachycardia",
+"Second-degree heart block Type II"
+],
+answer:"Ventricular Tachycardia"
+},
+
+{
+question:"Identify this ECG rhythm",
+image:"AFIB-I.jpg",
+options:[
+"Ventricular Fibrillation",
+"Second-degree heart block Type I",
+"Ventricular Tachycardia",
+"Atrial Fibrillation"
+],
+answer:"Atrial Fibrillation"
+},
+
+{
+question:"Identify this ECG rhythm",
+image:"AF-I.jpg",
+options:[
+"Ventricular Fibrillation",
+"Atrial Flutter",
+"Ventricular Tachycardia",
+"Atrial Fibrillation"
+],
+answer:"Atrial Flutter"
+},
+
+{
+question:"Identify this ECG rhythm",
+image:"1st-D.jpg",
+options:[
+"Normal Sinus Rhythm",
+"Sinus Bradycardia",
+"Second Degree AV Block Type I",
+"First Degree AV Block"
+],
+answer:"First Degree AV Block"
+},
+
+{
+question:"Choose the correct rhythm for this rhythm strip.",
+image:"asystole-I.jpg",
+options:[
+"Normal Sinus Rhythm",
+"Asystole",
+"Second Degree AV Block Type I",
+"First Degree AV Block"
+],
+answer:"Asystole"
+},
+
+{
+question:"Choose the correct rhythm for this rhythm strip.",
+image:"Normal-II.jpg",
+options:[
+"Normal Sinus Rhythm",
+"Asystole",
+"Second Degree AV Block Type I",
+"First Degree AV Block"
+],
+answer:"Normal Sinus Rhythm"
+},
+
+{
+question:"Choose the correct rhythm for this rhythm strip.",
+image:"Normal-II.jpg",
+options:[
+"Normal Sinus Rhythm",
+"Asystole",
+"Second Degree AV Block Type I",
+"First Degree AV Block"
+],
+answer:"Normal Sinus Rhythm"
+},
+
+{
+question:"Choose the correct rhythm for this rhythm strip.",
+image:"VFIB-I.jpg",
+options:[
+"Ventricular Flutter",
+"Asystole",
+"Sinus Arrest/Sinus Pause",
+"Ventricular Fibrillation"
+],
+answer:"Ventricular Fibrillation"
+},
+
+{
+question:"Choose the correct rhythm for this rhythm strip.",
+image:"SVT-I.jpg",
+options:[
+"Junctional Tachycardia",
+"Accelerated Idioventricular Rhythm",
+"Supraventricular Tachycardia",
+"Ventricular tachycardia"
+],
+answer:"Supraventricular Tachycardia"
+},
+
+{
+question:"Choose the correct rhythm for this rhythm strip.",
+image:"1st-I.jpg",
+options:[
+"Normal Sinus Rhythm",
+"Atrial Flutter",
+"First Degree AV Block",
+"Atrial Tachycardia"
+],
+answer:"First Degree AV Block"
+},
+
+{
+question:"Choose the correct rhythm for this rhythm strip.",
+image:"AB-I.jpg",
+options:[
+"Atrial Flutter",
+"Atrial Bigeminy",
+"PAC(Premature Atrial Contraction)",
+"Atrial Tachycardia"
+],
+answer:"Atrial Bigeminy"
+},
+
+{
+question:"Choose the correct rhythm for this rhythm strip.",
+image:"wolf.png",
+options:[
+"Wandering Atrial Pacemaker",
+"Atrial Bigeminy",
+"PAC(Premature Atrial Contraction)",
+"Wolf-Parkinson-White Syndrome"
+],
+answer:"Wolf-Parkinson-White Syndrome"
+},
+
+{
+question:"Identify this ECG rhythm",
+image:"AFIB-II.jpg",
+options:[
+"Ventricular Fibrillation",
+"Atrial Flutter",
+"Junctional Tachycardia",
+"Atrial Fibrillation"
+],
+answer:"Atrial Fibrillation"
+},
+
+{
+question:"Choose the correct rhythm for this rhythm strip.",
+image:"WAP-I.jpg",
+options:[
+"Wandering Atrial Pacemaker",
+"Atrial Bigeminy",
+"PAC(Premature Atrial Contraction)",
+"Wolf-Parkinson-White Syndrome"
+],
+answer:"Wandering Atrial Pacemaker"
+},
+
+{
+question:"Choose the correct rhythm for this rhythm strip.",
+image:"WAP-I.jpg",
+options:[
+"Wandering Atrial Pacemaker",
+"Multifocal Atrial Tachycardia",
+"PAC(Premature Atrial Contraction)",
+"Wolf-Parkinson-White Syndrome"
+],
+answer:"Multifocal Atrial Tachycardia"
+},
+
+],
+
+hard:[
+
+{
+question:"Identify dangerous rhythm",
+
+image:"1stD.jpg",
+
+options:[
+"Normal Sinus Rhythm",
+"First Degree AV Block",
+"Sinus Bradycardia",
+"Second Degree AV Block"
+],
+
+answer:"First Degree AV Block"
+},
+
+{
+question:"Identify dangerous rhythm",
+
+image:"2ndTII-I.jpg",
+
+options:[
+"Second Degree AV Block Type II",
+"First Degree AV Block",
+"Sinus Bradycardia",
+"Second Degree AV Block Type I"
+],
+
+answer:"Second Degree AV Block Type II"
+},
+
+{
+question:"Identify dangerous rhythm",
+
+image:"2ndTI-I.jpg",
+
+options:[
+"Second Degree AV Block Type II",
+"First Degree AV Block",
+"Sinus Bradycardia",
+"Second Degree AV Block Type I"
+],
+
+answer:"Second Degree AV Block Type II"
+},
+
+{
+question:"Identify dangerous rhythm",
+
+image:"3rd-I.jpg",
+
+options:[
+"Supraventricular Tachycardia",
+"Premature Ventricular Contractions",
+"Three Degree AV Block",
+"Second Degree AV Block Type I"
+],
+
+answer:"Three Degree AV Block"
+},
+
+]
+
+};
+
+/* VARIABLES */
+
+let currentCategory = "easy";
+
+let currentQuestion = 0;
+
+let selectedOption = null;
+
+/* LOAD QUIZ */
+
+function loadQuiz(){
+
+    const quiz =
+    quizzes[currentCategory][currentQuestion];
+
+    /* QUESTION */
+
+    document.getElementById("question")
+    .innerText = quiz.question;
+
+    /* IMAGE */
+
+    document.getElementById("quizImage")
+    .src = quiz.image;
+
+    /* QUESTION COUNT */
+
+    document.getElementById("questionCount")
+    .innerText =
+    `Question ${currentQuestion + 1}
+    Out of
+    ${quizzes[currentCategory].length}`;
+
+    /* OPTIONS */
+
+    const optionsContainer =
+    document.getElementById("optionsContainer");
+
+    optionsContainer.innerHTML = "";
+
+    selectedOption = null;
+
+    quiz.options.forEach(option => {
+
+        const div =
+        document.createElement("div");
+
+        div.classList.add("option");
+
+        div.innerText = option;
+
+        /* CLICK OPTION */
+
+        div.onclick = function(){
+
+            document.querySelectorAll(".option")
+            .forEach(opt => {
+
+                opt.classList.remove("selected");
+
+            });
+
+            div.classList.add("selected");
+
+            selectedOption = option;
+
+        };
+
+        optionsContainer.appendChild(div);
+
+    });
+
+}
+
+/* CHECK ANSWER */
+
+function checkAnswer(){
+
+    const quiz =
+    quizzes[currentCategory][currentQuestion];
+
+    const options =
+    document.querySelectorAll(".option");
+
+    let isCorrect = false;
+
+    options.forEach(option => {
+
+        /* SHOW CORRECT */
+
+        if(option.innerText === quiz.answer){
+
+            option.classList.add("correct");
+
+        }
+
+        /* SHOW WRONG */
+
+        if(option.classList.contains("selected")
+        &&
+        option.innerText !== quiz.answer){
+
+            option.classList.add("wrong");
+
+        }
+
+        /* CHECK ANSWER */
+
+        if(option.classList.contains("selected")
+        &&
+        option.innerText === quiz.answer){
+
+            isCorrect = true;
+
+        }
+
+    });
+
+    /* PLAY SOUND */
+
+    if(isCorrect){
+
+        const correctAudio =
+        document.getElementById("correctSound");
+
+        correctAudio.currentTime = 0;
+
+        correctAudio.play();
+
+    }else{
+
+        const wrongAudio =
+        document.getElementById("wrongSound");
+
+        wrongAudio.currentTime = 0;
+
+        wrongAudio.play();
+
+    }
+
+}
+
+/* NEXT */
+
+function nextQuestion(){
+
+    if(currentQuestion <
+    quizzes[currentCategory].length - 1){
+
+        currentQuestion++;
+
+        loadQuiz();
+
+    }
+
+}
+
+/* PREVIOUS */
+
+function previousQuestion(){
+
+    if(currentQuestion > 0){
+
+        currentQuestion--;
+
+        loadQuiz();
+
+    }
+
+}
+
+/* CHANGE LEVEL */
+
+function loadCategory(category){
+
+    currentCategory = category;
+
+    currentQuestion = 0;
+
+    loadQuiz();
+
+}
+
+/* FIRST LOAD */
+
+loadQuiz();
+
+</script>
+
+</body>
+
+</html>
